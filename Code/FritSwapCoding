@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IERC20 {
+    function transferFrom(address sender, address recipient, uint amount) external returns (bool);
+    function transfer(address recipient, uint amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint);
+}
+
+contract FrithToFritSwap {
+    address public owner;
+    IERC20 public frithToken;
+    IERC20 public fritToken;
+    uint public rate = 10; // 1 FRITH = 10 FRIT
+
+    constructor() {
+        owner = msg.sender;
+        frithToken = IERC20(0x47C8017f1e8998455493175F308B8eEE59DD18C1); // Correct FRITH
+        fritToken = IERC20(0x7A71FF754761456DCB1c67D8040454923A4F01f9); // FRIT
+    }
+
+    function swap(uint frithAmount) external {
+        uint fritAmount = frithAmount * rate;
+
+        require(frithToken.transferFrom(msg.sender, address(this), frithAmount), "FRITH transfer failed");
+        require(fritToken.transfer(msg.sender, fritAmount), "FRIT transfer failed");
+    }
+
+    function withdrawFrith(uint amount) external {
+        require(msg.sender == owner, "Not owner");
+        frithToken.transfer(owner, amount);
+    }
+
+    function withdrawFrit(uint amount) external {
+        require(msg.sender == owner, "Not owner");
+        fritToken.transfer(owner, amount);
+    }
+}
